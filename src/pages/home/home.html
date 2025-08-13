@@ -1,5 +1,23 @@
 @let products = productList | async;
 
 <div class="app-home-page">
-  {{ products | json }}
+  @for (product of products; track product.id) {
+  <mat-card class="product-card">
+    <mat-card-header>
+      <mat-card-title>{{ product.title }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Price: ${{ product.price }}</p>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onAddCartItem(product)"
+      >
+        Add to Cart
+      </button>
+    </mat-card-content>
+  </mat-card>
+  } @empty {
+  <p>No products available.</p>
+  }
 </div>

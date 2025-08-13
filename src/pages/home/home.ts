@@ -1,35 +1,26 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import CatalogDomainService from '@domain/catalog/catalog.domain.service';
+import { MatCardModule } from '@angular/material/card';
 import { CatalogDomainModel } from '@domain/catalog/catalog.model';
-import { map, Observable } from 'rxjs';
+import { HomeService } from './home.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatCardModule],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
-export class HomePage implements OnInit {
-  productList: Observable<CatalogDomainModel.ProductList> | undefined;
+export class HomePage {
+  private homeFacade = inject(HomeService);
+  productList = this.homeFacade.productList;
 
-  private catalogDomainService = inject(CatalogDomainService);
-
-  ngOnInit(): void {
-    this.getCatalog();
+  onAddCartItem(product: CatalogDomainModel.Product) {
+    this.homeFacade.addToCart(product);
   }
 
-  private getCatalog() {
-    this.productList = this.catalogDomainService.getCatalogProductList().pipe(
-      map((response: CatalogDomainModel.Response) => {
-        if (response.success) {
-          return response.data;
-        } else {
-          return [];
-        }
-      })
-    );
+  onCreateOrder() {
+    this.homeFacade.createOrder();
   }
 }
