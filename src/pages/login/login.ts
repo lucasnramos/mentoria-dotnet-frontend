@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import IdentityDomainService from '@domain/identity/identity.domain.service';
 import { IdentityDomainModel } from '@domain/identity/identity.model';
+import { LoginService } from './login.service';
 
 @Component({
   selector: 'app-login-page',
@@ -18,26 +19,14 @@ import { IdentityDomainModel } from '@domain/identity/identity.model';
 export class LoginPage {
   form!: FormGroup;
 
-  private identityDomainService = inject(IdentityDomainService);
-  private mockUser: IdentityDomainModel.LoginPayload = {
-    name: 'João Silva',
-    email: 'joao.silva@email.com',
-    password: 'poloko',
-    type: 1,
-  };
+  private loginService = inject(LoginService);
 
   ngOnInit(): void {
     this.setupForm();
   }
 
   onSubmit() {
-    console.log('Form Submitted', this.form.value);
-    if (this.form.invalid) {
-      console.warn('login with mock user');
-      this.identityDomainService.authenticateUser(this.mockUser);
-      return;
-    }
-    this.identityDomainService.authenticateUser(this.form.value);
+    this.loginService.authenticateUser(this.form);
   }
 
   private setupForm() {
