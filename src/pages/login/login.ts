@@ -1,7 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import {
-  Form,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -9,24 +8,17 @@ import {
 } from '@angular/forms';
 import IdentityDomainService from '@domain/identity/identity.domain.service';
 import { IdentityDomainModel } from '@domain/identity/identity.model';
-import CatalogDomainService from '@domain/catalog/catalog.domain.service';
-import { CatalogDomainModel } from '@domain/catalog/catalog.model';
-import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-home',
-  standalone: true,
+  selector: 'app-login-page',
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './home.page.html',
-  styleUrl: './home.page.scss',
+  templateUrl: './login.html',
+  styleUrl: './login.scss',
 })
-export class HomePage implements OnInit {
+export class LoginPage {
   form!: FormGroup;
-  productList: Observable<CatalogDomainModel.ProductList> | undefined;
 
   private identityDomainService = inject(IdentityDomainService);
-  private catalogDomainService = inject(CatalogDomainService);
-
   private mockUser: IdentityDomainModel.LoginPayload = {
     name: 'João Silva',
     email: 'joao.silva@email.com',
@@ -36,7 +28,6 @@ export class HomePage implements OnInit {
 
   ngOnInit(): void {
     this.setupForm();
-    this.getCatalog();
   }
 
   onSubmit() {
@@ -47,10 +38,6 @@ export class HomePage implements OnInit {
       return;
     }
     this.identityDomainService.authenticateUser(this.form.value);
-  }
-
-  private getCatalog() {
-    this.productList = this.catalogDomainService.getCatalogProductList();
   }
 
   private setupForm() {
