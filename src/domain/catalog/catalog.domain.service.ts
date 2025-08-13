@@ -8,7 +8,7 @@ export default class CatalogDomainService {
   private url = 'http://localhost:5124/api/product';
   private http = inject(HttpClient);
 
-  getCatalogProductList(): Observable<CatalogDomainModel.ProductList> {
-    return this.http.get<CatalogDomainModel.ProductList>(this.url);
+  getCatalogProductList(): Observable<CatalogDomainModel.Response> {
+    return this.http.get<CatalogDomainModel.Response>(this.url);
   }
 }

@@ -1,17 +1,15 @@
 export namespace CatalogDomainModel {
   export interface Product {
     id?: string;
-    name: string;
-    description: string;
+    title: string;
     price: number;
-    category: string;
+    thumbnailUrl: string;
   }
 
-  export interface Category {
-    id?: string;
-    name: string;
+  export interface Response {
+    success: boolean;
+    data: ProductList;
   }
 
   export type ProductList = Product[];
-  export type CategoryList = Category[];
 }

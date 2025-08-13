@@ -1,17 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  Form,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import IdentityDomainService from '@domain/identity/identity.domain.service';
-import { IdentityDomainModel } from '@domain/identity/identity.model';
+import { Component, inject, OnInit } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import CatalogDomainService from '@domain/catalog/catalog.domain.service';
 import { CatalogDomainModel } from '@domain/catalog/catalog.model';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -30,6 +22,14 @@ export class HomePage implements OnInit {
   }
 
   private getCatalog() {
-    this.productList = this.catalogDomainService.getCatalogProductList();
+    this.productList = this.catalogDomainService.getCatalogProductList().pipe(
+      map((response: CatalogDomainModel.Response) => {
+        if (response.success) {
+          return response.data;
+        } else {
+          return [];
+        }
+      })
+    );
   }
 }

@@ -7,11 +7,28 @@ export default class IdentityDomainService {
   private url = 'http://localhost:5294/api/user';
   private http = inject(HttpClient);
 
+  get isLoggedIn(): boolean {
+    return !!localStorage.getItem('accessToken');
+  }
+
+  get accessToken(): string | null {
+    return localStorage.getItem('accessToken');
+  }
+
   authenticateUser(payload: IdentityDomainModel.LoginPayload): boolean {
-    this.http.post(`${this.url}/login`, payload).subscribe({
-      next: (response) => console.log('Authentication successful', response),
-      error: (error) => console.error('Authentication failed', error),
-    });
+    this.http
+      .post<IdentityDomainModel.Response>(`${this.url}/login`, payload)
+      .subscribe({
+        next: (response) => {
+          if (response.authenticated) {
+            localStorage.setItem('accessToken', response.accessToken);
+            console.log('User authenticated and token stored');
+          } else {
+            console.error('Authentication failed:', response.message);
+          }
+        },
+        error: (error) => console.error('Authentication failed', error),
+      });
     return true;
   }
 

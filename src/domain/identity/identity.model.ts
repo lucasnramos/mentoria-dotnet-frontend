@@ -7,5 +7,13 @@ export namespace IdentityDomainModel {
     type: number;
   }
 
+  export interface Response {
+    authenticated: boolean;
+    created: string; // probably iso date
+    expiration: string; // probably iso date
+    accessToken: string;
+    message: string;
+  }
+
   export type LoginPayload = User;
 }
