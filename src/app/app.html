@@ -1,9 +1,13 @@
 <div class="mentoria-app-root">
-  <nav>
-    <ul>
-      <li><a routerLink="/" href="#">Home</a></li>
-      <li><a routerLink="/login" href="#">Login</a></li>
-    </ul>
+  <nav class="mentoria-app-nav">
+    <mat-toolbar>
+      <a matButton routerLink="/">Home</a>
+      <a matButton routerLink="/login">Login</a>
+      <a matButton routerLink="/cart">Cart</a>
+      <a matButton routerLink="/admin">Admin</a>
+    </mat-toolbar>
   </nav>
-  <router-outlet />
+  <div class="mentoria-app-content">
+    <router-outlet />
+  </div>
 </div>
