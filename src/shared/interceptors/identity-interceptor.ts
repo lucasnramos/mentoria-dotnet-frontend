@@ -1,8 +1,13 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import {
+  HttpHandlerFn,
+  HttpInterceptorFn,
+  HttpRequest,
+} from '@angular/common/http';
 
-export const identityInterceptor: HttpInterceptorFn = (req, next) => {
-  console.log('Identity Interceptor');
-
+export const identityInterceptor: HttpInterceptorFn = (
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn
+) => {
   const token = getToken();
 
   if (token) {
@@ -11,7 +16,7 @@ export const identityInterceptor: HttpInterceptorFn = (req, next) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    return next(cloned);
+    return next(cloned)
   }
 
   return next(req);
