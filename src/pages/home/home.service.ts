@@ -13,11 +13,11 @@ export class HomeService {
   private catalogList: Observable<CatalogDomainModel.Response>;
 
   constructor() {
-    this.catalogList = this.catalogDomainService.getCatalogProductList();
+    this.catalogList = this.catalogDomainService.getCatalogProductList()
   }
 
   get productList() {
-    return this.catalogList.pipe(
+    return this.catalogList?.pipe(
       map((response: CatalogDomainModel.Response) => {
         if (response.success) {
           return response.data;
