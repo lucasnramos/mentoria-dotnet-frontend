@@ -43,6 +43,7 @@
     "@angular/compiler-cli": "^20.1.0",
     "@angular/material": "^20.1.5",
     "@nx/angular": "21.3.11",
+    "@nx/plugin": "^21.3.11",
     "@nx/workspace": "21.3.11",
     "@schematics/angular": "^20.1.5",
     "@types/express": "^5.0.1",
