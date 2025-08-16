@@ -3,12 +3,12 @@
     "page-generator": {
       "factory": "./page/generator",
       "schema": "./page/schema.json",
-      "description": "generator generator"
+      "description": "page generator"
     },
     "domain-generator": {
       "factory": "./domain/domain-generator",
       "schema": "./domain/schema.json",
-      "description": "domain-generator generator"
+      "description": "domain generator"
     }
   }
 }

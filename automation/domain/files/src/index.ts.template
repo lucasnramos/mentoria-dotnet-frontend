@@ -1,2 +1,0 @@
-export * from './<%= name %>.domain.service.ts';
-export * from './<%= name %>.domain.model.ts';
