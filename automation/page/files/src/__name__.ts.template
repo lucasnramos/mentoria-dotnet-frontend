@@ -1,0 +1,12 @@
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-<%=name%>-page',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './<%=name%>.html',
+  styleUrl: './<%=name%>.scss',
+})
+export class <%=name%>Page {
+}
