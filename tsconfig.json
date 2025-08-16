@@ -13,15 +13,10 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
-      "@domain/*": [
-        "./src/domain/*"
-      ],
-      "@pages/*": [
-        "./src/pages/*"
-      ],
-      "@shared/*": [
-        "./src/shared/*"
-      ]
+      "@domain/*": ["./src/domain/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@shared/*": ["./src/shared/*"],
+      "automation": ["automation/src/index.ts"]
     }
   },
   "angularCompilerOptions": {
