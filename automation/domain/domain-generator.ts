@@ -14,7 +14,6 @@ export async function domainGeneratorGenerator(
 ) {
   const projectRoot = `src/domain/${options.name}`;
   const _names = names(options.name);
-  console.log(_names);
   generateFiles(tree, path.join(__dirname, 'files/src'), projectRoot, _names);
   await formatFiles(tree);
 }

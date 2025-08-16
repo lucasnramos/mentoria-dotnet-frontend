@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { <%= className %>DomainModel } from './<%= name %>.model';
+import { <%= className %>DomainModel } from './<%= name %>.domain.model';
 
 @Injectable({ providedIn: 'root' })
 export default class <%= className %>DomainService {
