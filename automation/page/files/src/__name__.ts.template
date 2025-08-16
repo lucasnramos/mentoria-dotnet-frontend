@@ -8,5 +8,5 @@ import { Component } from '@angular/core';
   templateUrl: './<%=name%>.html',
   styleUrl: './<%=name%>.scss',
 })
-export class <%=name%>Page {
+export class <%=className%>Page {
 }
