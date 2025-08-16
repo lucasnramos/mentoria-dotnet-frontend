@@ -6,16 +6,17 @@ import {
   Tree,
 } from '@nx/devkit';
 import * as path from 'path';
-import { GeneratorGeneratorSchema } from './schema';
+import { DomainGeneratorGeneratorSchema } from './schema';
 
-export async function generatorGenerator(
+export async function domainGeneratorGenerator(
   tree: Tree,
-  options: GeneratorGeneratorSchema
+  options: DomainGeneratorGeneratorSchema
 ) {
-  const projectRoot = `src/pages/${options.name}`;
+  const projectRoot = `src/domain/${options.name}`;
   const _names = names(options.name);
+  console.log(_names);
   generateFiles(tree, path.join(__dirname, 'files/src'), projectRoot, _names);
   await formatFiles(tree);
 }
 
-export default generatorGenerator;
+export default domainGeneratorGenerator;

@@ -4,6 +4,11 @@
       "factory": "./page/generator",
       "schema": "./page/schema.json",
       "description": "generator generator"
+    },
+    "domain-generator": {
+      "factory": "./domain/domain-generator",
+      "schema": "./domain/schema.json",
+      "description": "domain-generator generator"
     }
   }
 }
