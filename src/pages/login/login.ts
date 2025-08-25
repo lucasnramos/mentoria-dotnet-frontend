@@ -6,13 +6,22 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import IdentityDomainService from '@domain/identity/identity.domain.service';
-import { IdentityDomainModel } from '@domain/identity/identity.model';
 import { LoginService } from './login.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-login-page',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCardModule,
+  ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -37,10 +46,6 @@ export class LoginPage {
       password: new FormControl('', {
         validators: [Validators.required, Validators.minLength(6)],
       }),
-      name: new FormControl('João Silva', {
-        validators: [Validators.required],
-      }),
-      type: new FormControl(1, { validators: [Validators.required] }),
     });
   }
 }

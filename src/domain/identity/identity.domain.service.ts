@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { IdentityDomainModel } from './identity.model';
+import { catchError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export default class IdentityDomainService {
-  // point to server proxy instead of backend directly
-  private url = '/api/user';
+  private url = '/api/auth/login';
   private http = inject(HttpClient);
 
   get isLoggedIn(): boolean {
@@ -15,19 +15,18 @@ export default class IdentityDomainService {
     return false;
   }
 
-  get accessToken(): string | null {
-    // HttpOnly cookie is not accessible from client JavaScript
-    return null;
-  }
-
   authenticateUser(payload: IdentityDomainModel.LoginPayload): boolean {
-    // call the server-side login that will set HttpOnly cookie
     this.http
-      .post<Partial<IdentityDomainModel.Response>>('/api/auth/login', payload)
+      .post<IdentityDomainModel.Response>(this.url, payload)
+      .pipe(
+        catchError((error) => {
+          console.log('Error during authentication', error);
+          throw error;
+        })
+      )
       .subscribe({
         next: (response) => {
           console.log('Login response', response);
-          // token is in HttpOnly cookie; do not store in localStorage
         },
         error: (error) => console.error('Authentication failed', error),
       });
@@ -35,7 +34,7 @@ export default class IdentityDomainService {
   }
 
   registerUser(payload: IdentityDomainModel.User): boolean {
-    console.log(`Registering user with email: ${payload.name}`);
+    console.log(`Registering user with email: ${payload.email}`);
     return true;
   }
 }

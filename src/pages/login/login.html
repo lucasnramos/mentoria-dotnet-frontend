@@ -1,12 +1,40 @@
 <div class="app-login-page">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <h1>Login to your account</h1>
+    <mat-card class="login-card">
+      <h1>Login to your account</h1>
 
-    <label for="email">Email:</label>
-    <input id="email" type="text" formControlName="email" />
+      <mat-form-field>
+        <mat-label for="email">Email:</mat-label>
+        <input matInput id="email" type="text" formControlName="email" />
+        <mat-error *ngIf="form.get('email')?.hasError('required')"
+          >Email is required</mat-error
+        >
+        <mat-error *ngIf="form.get('email')?.hasError('email')"
+          >Enter a valid email</mat-error
+        >
+      </mat-form-field>
 
-    <label for="password">Password:</label>
-    <input id="password" type="password" formControlName="password" />
-    <button type="submit">Submit</button>
+      <mat-form-field>
+        <mat-label for="password">Password:</mat-label>
+        <input
+          matInput
+          id="password"
+          type="password"
+          formControlName="password"
+        />
+        <mat-error *ngIf="form.get('password')?.hasError('required')"
+          >Password is required</mat-error
+        >
+        <mat-error *ngIf="form.get('password')?.hasError('min')"
+          >Password must be 6 chars or longer - this message should be moved to
+          the register form</mat-error
+        >
+      </mat-form-field>
+      <button mat-raised-button [disabled]="form.invalid" type="submit">
+        Submit
+      </button>
+
+      <p>Don't have an account? Register here</p>
+    </mat-card>
   </form>
 </div>

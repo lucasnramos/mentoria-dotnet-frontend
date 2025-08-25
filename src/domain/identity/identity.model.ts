@@ -15,5 +15,8 @@ export namespace IdentityDomainModel {
     message: string;
   }
 
-  export type LoginPayload = User;
+  export interface LoginPayload {
+    email: string;
+    password: string;
+  }
 }

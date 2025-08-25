@@ -1,1 +1,13 @@
+.app-login-page {
+  display: flex;
+  justify-content: center;
+  padding-top: 40px;
+  height: 100vh;
 
+  .login-card {
+    width: 500px;
+    padding: 16px;
+    display: grid;
+    gap: 16px;
+  }
+}

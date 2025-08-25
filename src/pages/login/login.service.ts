@@ -7,10 +7,8 @@ import { IdentityDomainModel } from '@domain/identity/identity.model';
 export class LoginService {
   private identityDomainService = inject(IdentityDomainService);
   private mockUser: IdentityDomainModel.LoginPayload = {
-    name: 'João Silva',
     email: 'joao.silva@email.com',
     password: 'poloko',
-    type: 1,
   };
   constructor() {}
 

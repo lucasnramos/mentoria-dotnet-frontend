@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import CatalogDomainService from '@domain/catalog/catalog.domain.service';
 import { CatalogDomainModel } from '@domain/catalog/catalog.model';
-import { map, Observable } from 'rxjs';
+import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
