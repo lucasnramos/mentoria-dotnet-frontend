@@ -10,14 +10,9 @@ export class HomeService {
   private catalogDomainService = inject(CatalogDomainService);
   private orderDomainService = null; // inject(OrderDomainService)
   private cartList: CatalogDomainModel.ProductList = [];
-  private catalogList: Observable<CatalogDomainModel.Response>;
-
-  constructor() {
-    this.catalogList = this.catalogDomainService.getCatalogProductList()
-  }
 
   get productList() {
-    return this.catalogList?.pipe(
+    return this.catalogDomainService.getCatalogProductList().pipe(
       map((response: CatalogDomainModel.Response) => {
         if (response.success) {
           return response.data;

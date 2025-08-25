@@ -5,12 +5,122 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+
+app.use(express.json());
+app.use(cookieParser());
+
+const serviceMap: { prefix: string; baseUrl: string }[] = [
+  { prefix: '/api/user', baseUrl: 'http://localhost:5294' },
+  { prefix: '/api/product', baseUrl: 'http://localhost:5124' },
+];
+
+/**
+ * Login route: proxy credentials to identity microservice and set an HttpOnly cookie
+ * Client posts credentials to /api/auth/login. The backend response is forwarded
+ * but the access token is stored in an HttpOnly cookie by this server.
+ */
+app.post('/api/auth/login', async (req, res, next) => {
+  try {
+    const identityUrl = 'http://localhost:5294/api/user/login';
+    const resp = await fetch(identityUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(req.body),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || !data?.accessToken) {
+      const errorData = await resp.json();
+      res.status(resp.status).json(errorData);
+      return;
+    }
+
+    const cookieOpts = {
+      httpOnly: true,
+      secure: process.env['NODE_ENV'] === 'production',
+      sameSite: 'lax' as const,
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    };
+    res.cookie('accessToken', data.accessToken, cookieOpts);
+
+    res.status(200).json({
+      authenticated: data.authenticated ?? true,
+      message: data.message ?? 'ok',
+    });
+    return;
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * Generic proxy for /api/* - finds the matching microservice, forwards request and
+ * injects Authorization from HttpOnly cookie if present.
+ */
+app.use('/api', async (req, res, next) => {
+  try {
+    const service =
+      serviceMap.find((s) => req.originalUrl.startsWith(s.prefix)) ?? null;
+
+    if (!service) {
+      res.status(502).json({ message: 'No backend mapping for request' });
+      return;
+    }
+
+    const targetUrl = `${service.baseUrl}${req.originalUrl}`;
+    const token = req.cookies?.accessToken;
+
+    // clone headers but avoid host/content-length
+    const headers: Record<string, string> = {};
+    Object.entries(req.headers).forEach(([k, v]) => {
+      if (!v) return;
+      if (k === 'host' || k === 'content-length') return;
+      headers[k] = Array.isArray(v) ? v.join(', ') : String(v);
+    });
+
+    if (token) headers['authorization'] = `Bearer ${token}`;
+
+    const fetchOptions: any = {
+      method: req.method,
+      headers,
+      redirect: 'manual' as const,
+      body: ['GET', 'HEAD'].includes(req.method || '') ? undefined : req,
+    };
+
+    const backendResp = await fetch(targetUrl, fetchOptions);
+
+    res.status(backendResp.status);
+    backendResp.headers.forEach((value, key) => {
+      if (
+        [
+          'transfer-encoding',
+          'connection',
+          'keep-alive',
+          'proxy-authenticate',
+          'proxy-authorization',
+          'te',
+          'trailers',
+          'upgrade',
+        ].includes(key.toLowerCase())
+      ) {
+        return;
+      }
+      res.setHeader(key, value);
+    });
+
+    const text = await backendResp.text();
+    res.send(text);
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * Example Express Rest API endpoints can be defined here.
@@ -32,7 +142,7 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
-  }),
+  })
 );
 
 /**
@@ -42,7 +152,7 @@ app.use((req, res, next) => {
   angularApp
     .handle(req)
     .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
+      response ? writeResponseToNodeResponse(response, res) : next()
     )
     .catch(next);
 });

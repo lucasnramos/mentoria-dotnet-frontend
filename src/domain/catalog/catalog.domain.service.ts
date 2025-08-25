@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export default class CatalogDomainService {
-  private url = 'http://localhost:5124/api/product';
+  private url = '/api/product';
   private http = inject(HttpClient);
 
   getCatalogProductList(): Observable<CatalogDomainModel.Response> {
