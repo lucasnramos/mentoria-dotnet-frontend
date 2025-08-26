@@ -5,7 +5,7 @@ import { catchError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export default class IdentityDomainService {
-  private url = '/api/auth/login';
+  private url = '/api/auth';
   private http = inject(HttpClient);
 
   get isLoggedIn(): boolean {
@@ -17,7 +17,7 @@ export default class IdentityDomainService {
 
   authenticateUser(payload: IdentityDomainModel.LoginPayload): boolean {
     this.http
-      .post<IdentityDomainModel.Response>(this.url, payload)
+      .post<IdentityDomainModel.Response>(`${this.url}/login`, payload)
       .pipe(
         catchError((error) => {
           console.log('Error during authentication', error);
@@ -35,6 +35,20 @@ export default class IdentityDomainService {
 
   registerUser(payload: IdentityDomainModel.User): boolean {
     console.log(`Registering user with email: ${payload.email}`);
+    this.http
+      .post<IdentityDomainModel.Response>(this.url, payload)
+      .pipe(
+        catchError((error) => {
+          console.log('Error during registration', error);
+          throw error;
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('Registration response', response);
+        },
+        error: (error) => console.error('Registration failed', error),
+      });
     return true;
   }
 }

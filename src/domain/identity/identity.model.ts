@@ -19,4 +19,9 @@ export namespace IdentityDomainModel {
     email: string;
     password: string;
   }
+
+  export enum UserType {
+    Admin = 1,
+    Customer = 2,
+  }
 }
