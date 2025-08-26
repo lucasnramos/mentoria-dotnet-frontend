@@ -6,6 +6,7 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -16,18 +17,35 @@ const angularApp = new AngularNodeAppEngine();
 app.use(express.json());
 app.use(cookieParser());
 
+// Configure session middleware
+app.use(
+  session({
+    secret:
+      process.env['SESSION_SECRET'] || 'your-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env['NODE_ENV'] === 'production',
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      httpOnly: true,
+      sameSite: 'lax',
+    },
+  })
+);
+
 const serviceMap: { prefix: string; baseUrl: string }[] = [
   { prefix: '/api/user', baseUrl: 'http://localhost:5294' },
   { prefix: '/api/product', baseUrl: 'http://localhost:5124' },
 ];
 
 /**
- * Login route: proxy credentials to identity microservice and set an HttpOnly cookie
- * Client posts credentials to /api/auth/login. The backend response is forwarded
- * but the access token is stored in an HttpOnly cookie by this server.
+ * Login route: proxy credentials to identity microservice and store token in session
+ * Client posts credentials to /api/user/login. The backend response is forwarded
+ * but the access token is stored in the server session.
  */
-app.post('/api/auth/login', async (req, res, next) => {
+app.post('/api/user/login', async (req, res, next) => {
   try {
+    console.log('Login attempt for user:', req.body?.email);
     const identityUrl = 'http://localhost:5294/api/user/login';
     const resp = await fetch(identityUrl, {
       method: 'POST',
@@ -37,45 +55,139 @@ app.post('/api/auth/login', async (req, res, next) => {
     const data = await resp.json();
 
     if (!resp.ok || !data?.accessToken) {
-      const errorData = await resp.json();
+      const errorData = data;
       res.status(resp.status).json(errorData);
       return;
     }
 
-    const cookieOpts = {
-      httpOnly: true,
-      secure: process.env['NODE_ENV'] === 'production',
-      sameSite: 'lax' as const,
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    };
-    res.cookie('accessToken', data.accessToken, cookieOpts);
+    // Store token in session instead of cookie
+    (req.session as any).accessToken = data.accessToken;
+    (req.session as any).authenticated = true;
 
-    res.status(200).json({
+    res.status(resp.status).json({
       authenticated: data.authenticated ?? true,
       message: data.message ?? 'ok',
     });
     return;
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Token validation helper
+ */
+const validateToken = async (token: string): Promise<boolean> => {
+  try {
+    const validateUrl = 'http://localhost:5294/api/user/validate';
+    const resp = await fetch(validateUrl, {
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
+      },
+    });
+    return resp.ok;
+  } catch (error) {
+    console.error('Token validation failed:', error);
+    return false;
+  }
+};
+
+/**
+ * Check authentication status endpoint
+ */
+app.get('/api/auth/me', async (req, res) => {
+  try {
+    const token = (req.session as any)?.accessToken;
+
+    if (!token) {
+      res.status(401).json({ authenticated: false });
+      return;
+    }
+
+    // Validate token with identity service
+    const isValid = await validateToken(token);
+    if (!isValid) {
+      // Clear invalid session
+      (req.session as any).accessToken = null;
+      (req.session as any).authenticated = false;
+      res.status(401).json({ authenticated: false });
+      return;
+    }
+
+    res.json({ authenticated: true });
+  } catch (error) {
+    res.status(500).json({ authenticated: false, error: 'Server error' });
+  }
+});
+
+/**
+ * Logout endpoint
+ */
+app.post('/api/auth/logout', (req, res) => {
+  (req.session as any).accessToken = null;
+  (req.session as any).authenticated = false;
+  res.json({ message: 'Logged out successfully' });
+});
+
+app.post('/api/user', async (req, res, next) => {
+  try {
+    const identityUrl = 'http://localhost:5294/api/user';
+    const resp = await fetch(identityUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(req.body),
+    });
+    const data = await resp.json();
+
+    res.status(resp.status).json(data);
+    return;
+  } catch (error) {
+    next(error);
   }
 });
 
 /**
  * Generic proxy for /api/* - finds the matching microservice, forwards request and
- * injects Authorization from HttpOnly cookie if present.
+ * injects Authorization from session if present.
  */
 app.use('/api', async (req, res, next) => {
   try {
+    // Skip proxy for specific routes that are handled above
+    if (
+      req.originalUrl === '/api/user/login' ||
+      req.originalUrl === '/api/user' ||
+      req.originalUrl.startsWith('/api/auth/')
+    ) {
+      return next();
+    }
+
     const service =
       serviceMap.find((s) => req.originalUrl.startsWith(s.prefix)) ?? null;
 
     if (!service) {
-      res.status(502).json({ message: 'No backend mapping for request' });
+      res.status(502).json({
+        message: `No backend mapping for request, received ${req.originalUrl}`,
+      });
       return;
     }
 
+    const token = (req.session as any)?.accessToken;
+
+    // If there's a token, validate it
+    if (token) {
+      const isValidToken = await validateToken(token);
+      if (!isValidToken) {
+        // Clear invalid session
+        (req.session as any).accessToken = null;
+        (req.session as any).authenticated = false;
+        res.status(401).json({ message: 'Invalid or expired token' });
+        return;
+      }
+    }
+
     const targetUrl = `${service.baseUrl}${req.originalUrl}`;
-    const token = req.cookies?.accessToken;
 
     // clone headers but avoid host/content-length
     const headers: Record<string, string> = {};
@@ -85,6 +197,7 @@ app.use('/api', async (req, res, next) => {
       headers[k] = Array.isArray(v) ? v.join(', ') : String(v);
     });
 
+    // Only add authorization header if token exists and is valid
     if (token) headers['authorization'] = `Bearer ${token}`;
 
     const fetchOptions: any = {
@@ -94,6 +207,7 @@ app.use('/api', async (req, res, next) => {
       body: ['GET', 'HEAD'].includes(req.method || '') ? undefined : req,
     };
 
+    console.log(`fetch options ${targetUrl}`);
     const backendResp = await fetch(targetUrl, fetchOptions);
 
     res.status(backendResp.status);
@@ -121,18 +235,6 @@ app.use('/api', async (req, res, next) => {
     next(err);
   }
 });
-
-/**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
 
 /**
  * Serve static files from /browser
