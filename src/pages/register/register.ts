@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { RegisterService } from './register.service';
 
 @Component({
   selector: 'app-register-page',
@@ -28,26 +29,17 @@ import { MatInputModule } from '@angular/material/input';
 export class RegisterPage implements OnInit {
   form!: FormGroup;
 
+  private registerService = inject(RegisterService);
+
   ngOnInit(): void {
-    this.setupForm();
+    this.form = this.registerService.setupForm();
   }
 
   onSubmit() {
-    console.log(this.form.value, this.form.valid);
-  }
-
-  private setupForm() {
-    this.form = new FormGroup({
-      email: new FormControl('', {
-        validators: [Validators.required, Validators.email],
-      }),
-      password: new FormControl('', {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-      name: new FormControl('', {
-        validators: [Validators.required],
-      }),
-      type: new FormControl(2),
-    });
+    if (this.form.invalid) {
+      console.error('Invalid user form data');
+      return;
+    }
+    this.registerService.registerUser(this.form.value);
   }
 }

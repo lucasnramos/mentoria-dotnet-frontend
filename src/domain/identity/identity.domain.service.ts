@@ -5,7 +5,7 @@ import { catchError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export default class IdentityDomainService {
-  private url = '/api/auth';
+  private url = '/api/user';
   private http = inject(HttpClient);
 
   get isLoggedIn(): boolean {

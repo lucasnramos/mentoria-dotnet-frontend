@@ -22,22 +22,21 @@
           type="password"
           formControlName="password"
         />
-        <mat-error *ngIf="form.get('password')?.hasError('required')"
-          >Password is required</mat-error
-        >
-        <mat-error *ngIf="form.get('password')?.hasError('min')"
-          >Password must be 6 chars or longer - this message should be moved to
-          the register form</mat-error
-        >
+
+        @if (form.get('password')?.hasError('required')) {
+        <mat-error>Password is required</mat-error>
+        } @if (form.get('password')?.hasError('min')) {
+        <mat-error>Password must be 6 chars or longer</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field>
         <mat-label for="name">Name:</mat-label>
         <input matInput id="name" type="name" formControlName="name" />
 
-        <mat-error *ngIf="form.get('name')?.hasError('required')"
-          >Name is required</mat-error
-        >
+        @if (form.get('name')?.hasError('required')) {
+        <mat-error>Name is required</mat-error>
+        }
       </mat-form-field>
 
       <button mat-raised-button [disabled]="form.invalid" type="submit">
