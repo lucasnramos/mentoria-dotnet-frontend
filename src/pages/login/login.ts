@@ -31,21 +31,15 @@ export class LoginPage {
   private loginService = inject(LoginService);
 
   ngOnInit(): void {
-    this.setupForm();
+    this.form = this.loginService.setupForm();
   }
 
   onSubmit() {
-    this.loginService.authenticateUser(this.form);
-  }
+    if (this.form.invalid) {
+      console.error('Invalid user form data');
+      return;
+    }
 
-  private setupForm() {
-    this.form = new FormGroup({
-      email: new FormControl('', {
-        validators: [Validators.required, Validators.email],
-      }),
-      password: new FormControl('', {
-        validators: [Validators.required, Validators.minLength(6)],
-      }),
-    });
+    this.loginService.authenticateUser(this.form);
   }
 }
