@@ -34,6 +34,7 @@
     "@nx/devkit": "21.3.11",
     "cookie-parser": "^1.4.7",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -58,6 +59,7 @@
     "@types/cookie": "^0.6.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.1",
+    "@types/express-session": "^1.18.2",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",
     "jasmine-core": "~5.8.0",
