@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AdminPage } from '@pages/admin/admin';
 import { HomePage } from '@pages/home/home';
 import { LoginPage } from '@pages/login/login';
 import { RegisterPage } from '@pages/register/register';
@@ -17,6 +18,10 @@ export const routes: Routes = [
   {
     path: 'register',
     loadComponent: () => RegisterPage,
+  },
+  {
+    path: 'admin',
+    loadComponent: () => AdminPage,
   },
   {
     path: '**',

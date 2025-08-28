@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "nx serve",
+    "start:debugger": "nx serve --inspect",
     "build": "nx build",
     "watch": "nx build --watch --configuration development",
     "test": "nx test",

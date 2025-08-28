@@ -13,10 +13,10 @@ export class LoginService {
 
   setupForm() {
     return new FormGroup({
-      email: new FormControl('', {
+      email: new FormControl('luke@r4m05.com', {
         validators: [Validators.required, Validators.email],
       }),
-      password: new FormControl('', {
+      password: new FormControl('qwerty', {
         validators: [Validators.required, Validators.minLength(6)],
       }),
     });

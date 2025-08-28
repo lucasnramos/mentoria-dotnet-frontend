@@ -1,0 +1,87 @@
+<div class="admin-page">
+  <h2>Add new Product</h2>
+  <form [formGroup]="productForm" (ngSubmit)="onAddProduct()">
+    <div class="form-section">
+      <mat-form-field>
+        <mat-label for="title">Product Title</mat-label>
+        <input matInput id="title" type="text" formControlName="title" />
+
+        @if (productForm.get('title')?.hasError('required')) {
+        <mat-error>Required field</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label for="price">Price</mat-label>
+        <input matInput id="price" type="text" formControlName="price" />
+
+        @if (productForm.get('price')?.hasError('required')) {
+        <mat-error>Required field</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label for="thumbnailUrl">thumbnailUrl</mat-label>
+        <input
+          matInput
+          id="thumbnailUrl"
+          type="text"
+          formControlName="thumbnailUrl"
+        />
+
+        @if (productForm.get('thumbnailUrl')?.hasError('required')) {
+        <mat-error>Required field</mat-error>
+        }
+      </mat-form-field>
+      <p>*this will be changed to image upload so we can save them</p>
+
+      <button mat-raised-button [disabled]="productForm.invalid" type="submit">
+        Add product
+      </button>
+    </div>
+  </form>
+  <hr />
+
+  <h2>Add Admin User</h2>
+  <form [formGroup]="userForm" (ngSubmit)="onAddUser()">
+    <div class="form-section">
+      <mat-form-field>
+        <mat-label for="name">Name</mat-label>
+        <input matInput id="name" type="text" formControlName="name" />
+        @if (userForm.get('name')?.hasError('required')) {
+        <mat-error>Required field</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label for="email">Email</mat-label>
+        <input matInput id="email" type="text" formControlName="email" />
+        @if (userForm.get('email')?.hasError('required')) {
+        <mat-error>Required field</mat-error>
+        } @if (userForm.get('email')?.hasError('email')) {
+        <mat-error>Enter a valid email</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label for="password">Password</mat-label>
+        <input
+          matInput
+          id="password"
+          type="password"
+          formControlName="password"
+        />
+        @if (userForm.get('password')?.hasError('required')) {
+        <mat-error>Required field</mat-error>
+        } @if (userForm.get('password')?.hasError('minLength') ||
+        userForm.get('password')?.hasError('maxLength')) {
+        <mat-error>Passwords must be between 6 and 100 characters</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-raised-button [disabled]="userForm.invalid" type="submit">
+        Create user
+      </button>
+    </div>
+  </form>
+</div>

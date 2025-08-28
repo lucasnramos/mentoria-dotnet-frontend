@@ -23,6 +23,10 @@ export class HomeService {
     );
   }
 
+  getProducts() {
+    return this.catalogDomainService.getCatalogProductList();
+  }
+
   addToCart(product: CatalogDomainModel.Product) {
     this.cartList.push(product);
   }
