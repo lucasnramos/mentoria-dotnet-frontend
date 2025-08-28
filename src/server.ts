@@ -52,13 +52,14 @@ app.post('/api/user/login', async (req, res, next) => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(req.body),
     });
-    const data = await resp.json();
 
-    if (!resp.ok || !data?.accessToken) {
-      const errorData = data;
+    if (!resp.ok) {
+      const errorData = await resp.text();
       res.status(resp.status).json(errorData);
       return;
     }
+
+    const data = await resp.json();
 
     // Store token in session instead of cookie
     (req.session as any).accessToken = data.accessToken;
@@ -148,21 +149,35 @@ app.post('/api/user', async (req, res, next) => {
   }
 });
 
+app.get('/api/product', async (_, res, next) => {
+  try {
+    const productUrl = 'http://localhost:5124/api/product';
+    const resp = await fetch(productUrl, {
+      method: 'GET',
+      headers: { 'content-type': 'application/json' },
+    });
+    const data = await resp.json();
+    res.status(200).json(data);
+    return;
+  } catch (error) {
+    next(error);
+  }
+});
+
+const shouldSkipProxy = (url: string): boolean => {
+  return (
+    url === '/api/user/login' ||
+    url === '/api/user' ||
+    url.startsWith('/api/auth/')
+  );
+};
+
 /**
  * Generic proxy for /api/* - finds the matching microservice, forwards request and
  * injects Authorization from session if present.
  */
 app.use('/api', async (req, res, next) => {
   try {
-    // Skip proxy for specific routes that are handled above
-    if (
-      req.originalUrl === '/api/user/login' ||
-      req.originalUrl === '/api/user' ||
-      req.originalUrl.startsWith('/api/auth/')
-    ) {
-      return next();
-    }
-
     const service =
       serviceMap.find((s) => req.originalUrl.startsWith(s.prefix)) ?? null;
 
@@ -175,11 +190,9 @@ app.use('/api', async (req, res, next) => {
 
     const token = (req.session as any)?.accessToken;
 
-    // If there's a token, validate it
     if (token) {
       const isValidToken = await validateToken(token);
       if (!isValidToken) {
-        // Clear invalid session
         (req.session as any).accessToken = null;
         (req.session as any).authenticated = false;
         res.status(401).json({ message: 'Invalid or expired token' });
@@ -207,10 +220,9 @@ app.use('/api', async (req, res, next) => {
       body: ['GET', 'HEAD'].includes(req.method || '') ? undefined : req,
     };
 
-    console.log(`fetch options ${targetUrl}`);
     const backendResp = await fetch(targetUrl, fetchOptions);
+    const backendData = await backendResp.json();
 
-    res.status(backendResp.status);
     backendResp.headers.forEach((value, key) => {
       if (
         [
@@ -229,8 +241,8 @@ app.use('/api', async (req, res, next) => {
       res.setHeader(key, value);
     });
 
-    const text = await backendResp.text();
-    res.send(text);
+    res.status(backendResp.status).json(backendData);
+    next();
   } catch (err) {
     next(err);
   }
