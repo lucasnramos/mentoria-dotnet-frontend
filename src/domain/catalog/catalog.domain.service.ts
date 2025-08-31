@@ -11,4 +11,10 @@ export default class CatalogDomainService {
   getCatalogProductList(): Observable<CatalogDomainModel.Response> {
     return this.http.get<CatalogDomainModel.Response>(this.url);
   }
+
+  addProduct(
+    product: CatalogDomainModel.Product
+  ): Observable<CatalogDomainModel.Product> {
+    return this.http.post<CatalogDomainModel.Product>(this.url, product);
+  }
 }

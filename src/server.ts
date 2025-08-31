@@ -76,26 +76,6 @@ app.post('/api/user/login', async (req, res, next) => {
 });
 
 /**
- * Token validation helper
- */
-const validateToken = async (token: string): Promise<boolean> => {
-  try {
-    const validateUrl = 'http://localhost:5294/api/user/validate';
-    const resp = await fetch(validateUrl, {
-      method: 'GET',
-      headers: {
-        authorization: `Bearer ${token}`,
-        'content-type': 'application/json',
-      },
-    });
-    return resp.ok;
-  } catch (error) {
-    console.error('Token validation failed:', error);
-    return false;
-  }
-};
-
-/**
  * Check authentication status endpoint
  */
 app.get('/api/auth/me', async (req, res) => {
@@ -165,14 +145,6 @@ app.get('/api/product', async (_, res, next) => {
   }
 });
 
-const shouldSkipProxy = (url: string): boolean => {
-  return (
-    url === '/api/user/login' ||
-    url === '/api/user' ||
-    url.startsWith('/api/auth/')
-  );
-};
-
 /**
  * Generic proxy for /api/* - finds the matching microservice, forwards request and
  * injects Authorization from session if present.
@@ -213,37 +185,24 @@ app.use('/api', async (req, res, next) => {
 
     // Only add authorization header if token exists and is valid
     if (token) headers['authorization'] = `Bearer ${token}`;
+    if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH')
+      headers['content-type'] = 'application/json';
 
     const fetchOptions: any = {
       method: req.method,
       headers,
       redirect: 'manual' as const,
-      body: ['GET', 'HEAD'].includes(req.method || '') ? undefined : req,
+      body: ['GET', 'HEAD'].includes(req.method || '')
+        ? undefined
+        : JSON.stringify(req.body),
     };
 
     const backendResp = await fetch(targetUrl, fetchOptions);
     const backendData = await backendResp.json();
 
-    backendResp.headers.forEach((value, key) => {
-      if (
-        [
-          'transfer-encoding',
-          'connection',
-          'keep-alive',
-          'proxy-authenticate',
-          'proxy-authorization',
-          'te',
-          'trailers',
-          'upgrade',
-        ].includes(key.toLowerCase())
-      ) {
-        return;
-      }
-      res.setHeader(key, value);
-    });
-
     res.status(backendResp.status).json(backendData);
-    next();
+    // next();
+    return;
   } catch (err) {
     next(err);
   }
@@ -292,16 +251,6 @@ app.use(async (req, res, next) => {
 
     if (!token || !sessionAuth) {
       // remember where to return after login
-      (req.session as any).redirectTo = req.originalUrl;
-      res.redirect(302, '/login');
-      return;
-    }
-
-    // Validate token with identity service if you require extra verification
-    const isValid = await validateToken(token);
-    if (!isValid) {
-      (req.session as any).accessToken = null;
-      (req.session as any).authenticated = false;
       (req.session as any).redirectTo = req.originalUrl;
       res.redirect(302, '/login');
       return;

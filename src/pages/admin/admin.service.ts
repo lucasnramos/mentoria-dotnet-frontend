@@ -1,13 +1,20 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import CatalogDomainService from '@domain/catalog/catalog.domain.service';
+import { CatalogDomainModel } from '@domain/catalog/catalog.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
+  private catalogDomainService = inject(CatalogDomainService);
+
   setupProductForm() {
     return new FormGroup({
-      title: new FormControl('', [Validators.required]),
-      price: new FormControl('', [Validators.required, Validators.min(0)]),
-      thumbnailUrl: new FormControl('', [
+      title: new FormControl('Fixed value on title', [Validators.required]),
+      price: new FormControl('299.99', [
+        Validators.required,
+        Validators.min(0),
+      ]),
+      thumbnailUrl: new FormControl('http://localhost/images/test.png', [
         Validators.required,
         Validators.pattern('https?://.+'),
       ]),
@@ -24,6 +31,17 @@ export class AdminService {
       ]),
       name: new FormControl('', [Validators.required]),
       type: new FormControl(1, [Validators.required]),
+    });
+  }
+
+  addProduct(product: CatalogDomainModel.Product) {
+    this.catalogDomainService.addProduct(product).subscribe({
+      next: (addedProduct) => {
+        console.log('Product added successfully:', addedProduct);
+      },
+      error: (error) => {
+        console.error('Error adding product:', error);
+      },
     });
   }
 }

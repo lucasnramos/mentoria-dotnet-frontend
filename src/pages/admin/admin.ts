@@ -31,11 +31,14 @@ export class AdminPage implements OnInit {
   }
 
   onAddProduct() {
-    // if (this.form.invalid) {
-    //   console.error('Invalid user form data');
-    //   return;
-    // }
-    // this.facade.registerUser(this.form.value);
+    if (this.productForm.invalid) {
+      console.error('Invalid user form data');
+      return;
+    }
+    this.service.addProduct({
+      ...this.productForm.value,
+      price: Number(this.productForm.value.price),
+    });
   }
 
   onAddUser() {
