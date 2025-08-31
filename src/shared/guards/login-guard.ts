@@ -5,7 +5,7 @@ import IdentityDomainService from '@domain/identity/identity.domain.service';
 export const loginGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const identityDomainService = inject(IdentityDomainService);
-  const isLoggedIn = identityDomainService.isLoggedIn;
+  const isLoggedIn = false; // TODO check logged in via SSR server
 
   if (isLoggedIn) {
     router.navigate(['/']);

@@ -1,18 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { IdentityDomainModel } from './identity.model';
-import { catchError } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export default class IdentityDomainService {
   private url = '/api/user';
   private http = inject(HttpClient);
 
-  get isLoggedIn(): boolean {
-    // token is stored HttpOnly in cookie by the server; cannot be read by JS
-    // For a client-side logged-in check implement a lightweight /api/auth/me endpoint
-    // or rely on application state from successful login response.
-    return false;
+  async isLoggedIn(): Promise<{ authenticated: boolean }> {
+    const resp = await firstValueFrom(this.http.get('/api/auth/me'));
+    return resp as { authenticated: boolean };
   }
 
   authenticateUser(payload: IdentityDomainModel.LoginPayload): boolean {

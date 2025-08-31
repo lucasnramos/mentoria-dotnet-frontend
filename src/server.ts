@@ -103,23 +103,24 @@ app.get('/api/auth/me', async (req, res) => {
     const token = (req.session as any)?.accessToken;
 
     if (!token) {
-      res.status(401).json({ authenticated: false });
+      res.status(401).json({ authenticated: false, message: 'No token' });
       return;
     }
 
     // Validate token with identity service
-    const isValid = await validateToken(token);
+    // const isValid = await validateToken(token);
+    const isValid = (req.session as any).authenticated;
     if (!isValid) {
       // Clear invalid session
       (req.session as any).accessToken = null;
       (req.session as any).authenticated = false;
-      res.status(401).json({ authenticated: false });
+      res.status(401).json({ authenticated: false, message: 'Invalid Token' });
       return;
     }
 
     res.json({ authenticated: true });
   } catch (error) {
-    res.status(500).json({ authenticated: false, error: 'Server error' });
+    res.status(500).json({ authenticated: false, message: 'Server error' });
   }
 });
 
@@ -191,7 +192,7 @@ app.use('/api', async (req, res, next) => {
     const token = (req.session as any)?.accessToken;
 
     if (token) {
-      const isValidToken = await validateToken(token);
+      const isValidToken = (req.session as any).authenticated;
       if (!isValidToken) {
         (req.session as any).accessToken = null;
         (req.session as any).authenticated = false;

@@ -2,10 +2,13 @@
   <nav class="mentoria-app-nav">
     <mat-toolbar>
       <a matButton routerLink="/">Home</a>
-      <a matButton routerLink="/login">Login</a>
-      <a matButton routerLink="/register">Register</a>
+      @if(isAuthenticated()) {
       <a matButton routerLink="/cart">Cart</a>
       <a matButton routerLink="/admin">Admin</a>
+      } @else {
+      <a matButton routerLink="/login">Login</a>
+      <a matButton routerLink="/register">Register</a>
+      }
     </mat-toolbar>
   </nav>
   <div class="mentoria-app-content">
