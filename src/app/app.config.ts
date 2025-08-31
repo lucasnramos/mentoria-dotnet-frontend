@@ -4,7 +4,7 @@ import {
   provideZoneChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { identityInterceptor } from '@shared/interceptors/identity-interceptor';
+import { identityInterceptor } from '@shared/interceptors/identity.interceptor';
 
 import { routes } from './app.routes';
 import {

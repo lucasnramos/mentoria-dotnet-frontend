@@ -263,6 +263,57 @@ app.use(
 /**
  * Handle all other requests by rendering the Angular application.
  */
+// Server-side navigation auth middleware: redirect unauthenticated users for
+// protected HTML GET requests before the Angular SSR handler runs.
+// This prevents the SSR pipeline from attempting to render a page the user
+// shouldn't see and avoids guards that make HTTP calls during SSR.
+const protectedPrefixes = ['/admin']; // add other protected route prefixes as needed
+
+app.use(async (req, res, next) => {
+  try {
+    // Only consider top-level navigation requests for HTML pages
+    if (
+      req.method !== 'GET' ||
+      !(req.headers.accept || '').includes('text/html')
+    ) {
+      return next();
+    }
+
+    // Skip API and static asset requests
+    if (req.originalUrl.startsWith('/api') || req.originalUrl.includes('.')) {
+      return next();
+    }
+
+    const needsAuth = protectedPrefixes.some((p) => req.path.startsWith(p));
+    if (!needsAuth) return next();
+
+    const token = (req.session as any)?.accessToken;
+    const sessionAuth = (req.session as any)?.authenticated;
+
+    if (!token || !sessionAuth) {
+      // remember where to return after login
+      (req.session as any).redirectTo = req.originalUrl;
+      res.redirect(302, '/login');
+      return;
+    }
+
+    // Validate token with identity service if you require extra verification
+    const isValid = await validateToken(token);
+    if (!isValid) {
+      (req.session as any).accessToken = null;
+      (req.session as any).authenticated = false;
+      (req.session as any).redirectTo = req.originalUrl;
+      res.redirect(302, '/login');
+      return;
+    }
+
+    // token ok, continue to SSR
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
+
 app.use((req, res, next) => {
   angularApp
     .handle(req)

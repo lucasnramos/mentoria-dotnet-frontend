@@ -3,7 +3,7 @@ import { AdminPage } from '@pages/admin/admin';
 import { HomePage } from '@pages/home/home';
 import { LoginPage } from '@pages/login/login';
 import { RegisterPage } from '@pages/register/register';
-import { loginGuard } from '@shared/guards/login-guard';
+import { loginGuard } from '@shared/guards/login.guard';
 
 export const routes: Routes = [
   {
