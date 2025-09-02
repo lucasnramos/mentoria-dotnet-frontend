@@ -5,12 +5,17 @@ import IdentityDomainService from '@domain/identity/identity.domain.service';
 export const loginGuard: CanActivateFn = async (route, state) => {
   const router = inject(Router);
   const identityDomainService = inject(IdentityDomainService);
-  const isLoggedIn = false; // TODO check logged in via SSR server
 
-  if (isLoggedIn) {
-    router.navigate(['/']);
-    return false;
-  } else {
+  // make shift solution here, I don't like having a catch returning true.
+  try {
+    const isLoggedIn = await identityDomainService.isLoggedIn();
+    if (isLoggedIn) {
+      router.navigate(['/']);
+      return false;
+    } else {
+      return true;
+    }
+  } catch (e) {
     return true;
   }
 };
